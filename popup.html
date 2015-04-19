@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <title>image saver</title>
+    <style>
+      body {
+        min-width: 830px;
+        overflow-x: hidden;
+      }
+
+      img {
+        margin: 5px;
+        max-width: 400px;
+      }
+
+      .download {
+        border: 3px solid red;
+      }
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
+     -->
+    <script src="popup.js"></script>
+  </head>
+  <body>
+    <button id="downloadButton"> Download Selected </button>
+    <button id="selectAllButton"> Select All </button>
+    <button id="deSelectAllButton"> Unselect All </button>
+    <br />
+    <button id="clearListButton"> Clear List </button>
+    <button id="stopDownloadsButton"> Stop Downloads </button>
+    <button id="scanningButton"> Scanning: </button>
+    <br />
+    <button id="captureButton"> Capture Images from all tabs in window </button>
+    <br />
+  </body>
+</html>
+
