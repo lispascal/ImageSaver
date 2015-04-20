@@ -14,7 +14,7 @@ function listPush(url, sampUrl)
 }
 
 // called by some of the context menu options.
-function addtoList(info, tab) {
+function addToList(info, tab) {
     var url;
     var type;
     if(info.menuItemId == con1) // image
@@ -27,21 +27,23 @@ function addtoList(info, tab) {
         url = info.linkUrl;
         listPush(url);
     }
-    else if(info.menuItemId == con5) // all images in link's parent class
-    {
-        url = info.linkUrl;
+}
 
-        // send message to content script
-        chrome.tabs.sendMessage(tab.id, {"query": "urlsOfParentClass"},
-                                    function(response) {
-            if(response == null || response.arr == null)
-                return;
-            for(var i = 0; i < response.arr.length; i++)
-            {
-                listPush(response.arr[i], response.sampArr[i]);
-            }
-        });
-    }
+function addFromThumbnails(info, tab) {
+    console.log(info);
+
+    // send message to content script
+    chrome.tabs.sendMessage(tab.id, 
+            {"pageUrl": info.pageUrl,
+            "query": "urlsOfParentClass"},
+            function(response) {
+        if(response == null || response.arr == null)
+            return;
+        for(var i = 0; i < response.arr.length; i++)
+        {
+            listPush(response.arr[i], response.sampArr[i]);
+        }
+    });
 }
 
 
@@ -261,10 +263,10 @@ chrome.commands.onCommand.addListener(function(command) {
 
 var con1 = chrome.contextMenus.create({"title": "add image to list",
                                     "contexts": ["image"],
-                                    "onclick": addtoList });
+                                    "onclick": addToList });
 
 var con2 = chrome.contextMenus.create({"title": "add link to list", "contexts":["link"],
-                                   "onclick": addtoList });
+                                   "onclick": addToList });
 
 var con3 = chrome.contextMenus.create({"title": "view list", "contexts":["all"],
                                     "onclick": viewList})
@@ -272,8 +274,8 @@ var con3 = chrome.contextMenus.create({"title": "view list", "contexts":["all"],
 var con4 = chrome.contextMenus.create({"title": "download all", "contexts":["all"],
                                     "onclick": downloadList})
 
-var con5 = chrome.contextMenus.create({"title": "add all imgs from link's parent class", "contexts":["link"],
-                                   "onclick": addtoList });
+var con5 = chrome.contextMenus.create({"title": "add all imgs from similar thumbnails", "contexts":["link"],
+                                   "onclick": addFromThumbnails });
 
 var con6 = chrome.contextMenus.create({"title": "clear list", "contexts":["all"],
                                    "onclick": clearList });

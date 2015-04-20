@@ -47,18 +47,60 @@ function dispatchToBackgroundScript(message, callback) {
  * If both of the above are true, then this function will return all images
  * from those links in an object, with the thumbnails as "samples"
  */
-function getUrlsOfParentClass() {
-	var cl = tar.parentElement.getAttribute("class");
-	var list = document.getElementsByClassName(cl);
-	
-	var urlList = {};
+function getUrlsOfParentClass(request) {
+	var list;
 
+	var urlList = {};
 	urlList.arr = [];
 	urlList.sampArr = [];
-	for(var i = 0; i < list.length; i++)
+
+	console.log("in fn");
+	if(request.pageUrl.indexOf("http://imgur.com/") == 0){
+		list = document.getElementsByClassName("post");
+
+/* // imgur sidebar. can't identify gifs from non-gifs
+		if(tar.getAttribute("class").indexOf("nav-image") >= 0)
+		{
+			list = document.getElementsByClassName("nav-link");
+			for(var i = 0; i < list.length; i++)
+			{
+				var id = list[i].dataset.hash;
+				var isAlbum = id.length <= 6; // this is a hack. ablums are usually 5 characters, images 7
+
+			}
+		}
+		*/
+		if(list != null && list.length >= 0)
+		{
+			console.log("in imgur");
+			for(var i = 0; i < list.length; i++)
+			{
+				var id = list[i].id;
+				var isAlbum = list[i].querySelector(".post-info").innerHTML.indexOf("album") > 0;
+				if(isAlbum)
+					continue;
+				var isAnimated = list[i].querySelector(".post-info").innerHTML.indexOf("animated") > 0;
+				var urlEnd = isAnimated ? ".gif" : ".jpg";
+				var url = "http://i.imgur.com/" + id + urlEnd;
+
+				var sampUrl = list[i].querySelector("img").src;
+
+				urlList.arr.push(url);
+				urlList.sampArr.push(sampUrl);
+			}
+		}
+	}
+	else
 	{
-		urlList.arr[i] = list[i].href;
-		urlList.sampArr[i] = list[i].getElementsByTagName("img")[0].getAttribute("src");
+		var cl = tar.parentElement.getAttribute("class");
+		var list = document.getElementsByClassName(cl);
+		
+
+		for(var i = 0; i < list.length; i++)
+		{
+			urlList.arr[i] = list[i].href;
+			urlList.sampArr[i] = list[i].getElementsByTagName("img")[0].getAttribute("src");
+		}
 	}
 	return urlList;
 }
@@ -113,8 +155,9 @@ function getUrlsOfPageImagesGivenSize(dim, markRed) {
 //receives messages from other scripts.
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
+		console.log(request);
 		if(request.query == "urlsOfParentClass") // from bg.js
-			sendResponse(getUrlsOfParentClass());
+			sendResponse(getUrlsOfParentClass(request));
 		else if(request.query === "urlsOfPageImages") // from bg.js
 			sendResponse(getUrlsOfPageImages());
 		else if(request.query === "urlsOfPageImagesGivenSize") // from bg.js
