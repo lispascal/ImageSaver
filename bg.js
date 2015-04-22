@@ -2,6 +2,34 @@
 var urls = [];
 var sample_urls = [];
 
+chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
+    if(item.byExtensionId != null && item.byExtensionId == chrome.runtime.id)
+    {
+        var filename = "Image Saver/" + item.filename;
+
+        var ext;
+        switch(item.mime){ // fix mime types
+            case "image/png":
+                ext = ".png";
+                break;
+            case "image/jpeg":
+            case "image/jpg":
+                ext = ".jpg";
+                break;
+            case "image/gif":
+                ext = ".gif";
+                break;
+            default:
+                break;
+        }
+        if(ext.length != 0) // if one of the above, replace extension.
+            filename = filename.substring(0, filename.lastIndexOf(".")) + ext;
+        suggest({"filename": filename, conflictAction: "uniquify"});
+    }
+    else
+        suggest(); // not for this extension, so ignore it
+});
+
 // should be used when wishing to push to the lists stored in this script.
 function listPush(url, sampUrl)
 {
@@ -163,7 +191,11 @@ function downloadHelper(dlist, filesDownloaded) {
     else
     {
         var dlurl = dlist[filesDownloaded];
-        chrome.downloads.download({"url": dlurl, conflictAction : "uniquify"}, function dl(dId) {
+        var onDeter
+
+        chrome.downloads.download(
+            {"url": dlurl,
+            conflictAction : "uniquify"}, function dl(dId) {
             if(stopDownloadsFlag)
             {
                 chrome.downloads.cancel(dId);
