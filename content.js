@@ -54,39 +54,45 @@ function getUrlsOfParentClass(request) {
 	urlList.arr = [];
 	urlList.sampArr = [];
 
-	console.log("in fn");
 	if(request.pageUrl.indexOf("http://imgur.com/") == 0){
-		list = document.getElementsByClassName("post");
-
-/* // imgur sidebar. can't identify gifs from non-gifs
-		if(tar.getAttribute("class").indexOf("nav-image") >= 0)
+ 		// imgur sidebar.
+		if(tar.getAttribute("class").indexOf("nav-link") >= 0)
 		{
 			list = document.getElementsByClassName("nav-link");
 			for(var i = 0; i < list.length; i++)
 			{
 				var id = list[i].dataset.hash;
 				var isAlbum = id.length <= 6; // this is a hack. ablums are usually 5 characters, images 7
-
-			}
-		}
-		*/
-		if(list != null && list.length >= 0)
-		{
-			console.log("in imgur");
-			for(var i = 0; i < list.length; i++)
-			{
-				var id = list[i].id;
-				var isAlbum = list[i].querySelector(".post-info").innerHTML.indexOf("album") > 0;
 				if(isAlbum)
 					continue;
-				var isAnimated = list[i].querySelector(".post-info").innerHTML.indexOf("animated") > 0;
-				var urlEnd = isAnimated ? ".gif" : ".jpg";
-				var url = "http://i.imgur.com/" + id + urlEnd;
-
-				var sampUrl = list[i].querySelector("img").src;
+				var url = "http://i.imgur.com/" + id + ".jpg";
+				var sampUrl = "http://i.imgur.com/" + id + "b.jpg";
 
 				urlList.arr.push(url);
 				urlList.sampArr.push(sampUrl);
+			}
+		}
+		else // imgur main
+		{
+			list = document.getElementsByClassName("post");
+			if(list != null && list.length >= 0)
+			{
+				console.log("in imgur");
+				for(var i = 0; i < list.length; i++)
+				{
+					var id = list[i].id;
+					var isAlbum = list[i].querySelector(".post-info").innerHTML.indexOf("album") > 0;
+					if(isAlbum)
+						continue;
+					var isAnimated = list[i].querySelector(".post-info").innerHTML.indexOf("animated") > 0;
+					var urlEnd = isAnimated ? ".gif" : ".jpg";
+					var url = "http://i.imgur.com/" + id + urlEnd;
+
+					var sampUrl = list[i].querySelector("img").src;
+
+					urlList.arr.push(url);
+					urlList.sampArr.push(sampUrl);
+				}
 			}
 		}
 	}
@@ -95,7 +101,6 @@ function getUrlsOfParentClass(request) {
 		var cl = tar.parentElement.getAttribute("class");
 		var list = document.getElementsByClassName(cl);
 		
-
 		for(var i = 0; i < list.length; i++)
 		{
 			urlList.arr[i] = list[i].href;
