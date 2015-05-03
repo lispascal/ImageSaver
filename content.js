@@ -77,7 +77,6 @@ function getUrlsOfParentClass(request) {
 			list = document.getElementsByClassName("post");
 			if(list != null && list.length >= 0)
 			{
-				console.log("in imgur");
 				for(var i = 0; i < list.length; i++)
 				{
 					var id = list[i].id;
@@ -93,6 +92,20 @@ function getUrlsOfParentClass(request) {
 					urlList.arr.push(url);
 					urlList.sampArr.push(sampUrl);
 				}
+			}
+		}
+	}
+	else if(request.pageUrl.indexOf("deviantart.com/") >= 0){
+		list = document.getElementsByClassName("thumb");
+		if(list != null && list.length >= 0)
+		{
+			for(var i = 0; i < list.length; i++)
+			{
+				var url = list[i].dataset.superImg;
+				var sampUrl = list[i].querySelector("img").src;
+
+				urlList.arr.push(url);
+				urlList.sampArr.push(sampUrl);
 			}
 		}
 	}
@@ -160,7 +173,7 @@ function getUrlsOfPageImagesGivenSize(dim, markRed) {
 //receives messages from other scripts.
 chrome.runtime.onMessage.addListener(
 	function(request, sender, sendResponse) {
-		console.log(request);
+		// console.log(request);
 		if(request.query == "urlsOfParentClass") // from bg.js
 			sendResponse(getUrlsOfParentClass(request));
 		else if(request.query === "urlsOfPageImages") // from bg.js
