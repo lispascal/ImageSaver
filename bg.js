@@ -3,6 +3,7 @@ var urls = [];
 var sample_urls = [];
 
 chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
+    // for this chrome extension, so fix the file extension
     if(item.byExtensionId != null && item.byExtensionId == chrome.runtime.id)
     {
         var filename = "Image Saver/" + item.filename;
@@ -58,12 +59,12 @@ function addToList(info, tab) {
 }
 
 function addFromThumbnails(info, tab) {
-    console.log(info);
+    // console.log(info);
 
     // send message to content script
     chrome.tabs.sendMessage(tab.id, 
             {"pageUrl": info.pageUrl,
-            "query": "urlsOfParentClass"},
+            "query": "imagesOfThumbnails"},
             function(response) {
         if(response == null || response.arr == null)
             return;
@@ -134,12 +135,12 @@ function captureImages(callback) {
                             img.urls.push(response.arr[i]);
                         }
                     }
-                    console.log(recvd + "/" + tabArray.length);
+                    // console.log(recvd + "/" + tabArray.length);
 
                     if(recvd == tabArray.length) // finished processing all tabs
                     {
-                        console.log(callback);
-                        console.log(img);
+                        // console.log(callback);
+                        // console.log(img);
                         callback(img);
                     }
                 });
@@ -191,7 +192,6 @@ function downloadHelper(dlist, filesDownloaded) {
     else
     {
         var dlurl = dlist[filesDownloaded];
-        var onDeter
 
         chrome.downloads.download(
             {"url": dlurl,
@@ -254,7 +254,7 @@ chrome.runtime.onMessage.addListener(
                 addEnclosed(request.arr);
                 break;
             case "toggleScanning":
-                sendResponse({ "scanning" : toggleScanning() });
+                sendResponse({ "success" : toggleScanning() });
                 break;
             case "captureImages":
                 captureImages(sendResponse);

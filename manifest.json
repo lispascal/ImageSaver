@@ -28,7 +28,7 @@
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["content.js"]
+			"js": ["library/jquery-2.1.4.js", "content.js"]
 		}
 	],
 
