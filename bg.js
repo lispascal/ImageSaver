@@ -195,50 +195,50 @@ function downloadHelper(dlist, filesDownloaded) {
         var dlurl = dlist[filesDownloaded];
 
         chrome.downloads.download({"url": dlurl,
-            	conflictAction : "uniquify"},
-        	function (dId) {
-        		if(stopDownloadsFlag)
-            		chrome.downloads.cancel(dId);
-        		else
-        		{
+                conflictAction : "uniquify"},
+            function (dId) {
+                if(stopDownloadsFlag)
+                    chrome.downloads.cancel(dId);
+                else
+                {
 
-	        		if(dId == undefined) // if download fails, don't add to list of "successfully downloaded"
-					{
-						// maybe keep track of these, so we can download from <img>-made blobs
-						console.log("download failed: " + dlurl);
-					}
-					else
-					{
-						dlItems.push(dId);
-					}
-            		downloadHelper(dlist, filesDownloaded+1)
-        		}
-        	}
+                    if(dId == undefined) // if download fails, don't add to list of "successfully downloaded"
+                    {
+                        // maybe keep track of these, so we can download from <img>-made blobs
+                        console.log("download failed: " + dlurl);
+                    }
+                    else
+                    {
+                        dlItems.push(dId);
+                    }
+                    downloadHelper(dlist, filesDownloaded+1)
+                }
+            }
         );
     }
 }
 
 chrome.downloads.onChanged.addListener(function (downloadDelta) {
-	var id = downloadDelta.id;
-	if (downloadDelta.state != null)
-	{
-		if(downloadDelta.state.current == "interrupted") {
-			// send this back, so client can download via image copy?
-		} else if(downloadDelta.state.current == "complete") {
-			chrome.downloads.search({"id" : id}, function(itemArray) { // get download url
-				if(itemArray.length == 1) {
-					var url = itemArray[0].url;
-					var index = urls.indexOf(url);
-					urls_downloaded[index] = true; // update own record of download
+    var id = downloadDelta.id;
+    if (downloadDelta.state != null)
+    {
+        if(downloadDelta.state.current == "interrupted") {
+            // send this back, so client can download via image copy?
+        } else if(downloadDelta.state.current == "complete") {
+            chrome.downloads.search({"id" : id}, function(itemArray) { // get download url
+                if(itemArray.length == 1) {
+                    var url = itemArray[0].url;
+                    var index = urls.indexOf(url);
+                    urls_downloaded[index] = true; // update own record of download
 
-					// tell Popup that that download finished.
-					chrome.runtime.sendMessage({"query" : "downloadFinished",
-							"url": url}); 
-				}
-			});
-		}
+                    // tell Popup that that download finished.
+                    chrome.runtime.sendMessage({"query" : "downloadFinished",
+                            "url": url}); 
+                }
+            });
+        }
 
-	}
+    }
 });
 
 
@@ -252,7 +252,7 @@ function clearList() {
 function inCurrentTab(callback) {
     chrome.tabs.query( {"active":true, "currentWindow":true}, function(tabArr){
         var tab = tabArr[0];
-        callback(tab);
+        callback(tabArr[0]);
     });
 }
 
@@ -270,9 +270,9 @@ chrome.runtime.onMessage.addListener(
         {
             case "urlList":
                 sendResponse({ "urls" : urls, 
-                		"samples" : sample_urls, 
-                		"download_status" : urls_downloaded,
-                		"scanning" : scanningFlag});
+                        "samples" : sample_urls, 
+                        "download_status" : urls_downloaded,
+                        "scanning" : scanningFlag});
                 break;
             case "clearList":
                 clearList();
@@ -305,15 +305,11 @@ chrome.runtime.onMessage.addListener(
 
 
 // listens for hotkeys
-chrome.commands.onCommand.addListener(function(command) {
-    if(command == 'saveImage')
-    {
-    	console.log("hi")
+chrome.commands.onCommand.addListener(function (command) {
+    if (command == 'saveImage') {
         inCurrentTab(function(tab){
             chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages"},
                                         function(response) {
-
-               alert("recvd: ");
                 if(response == null || response.arr == null)
                     alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
                 else

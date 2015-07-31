@@ -3,7 +3,7 @@
 
 function showImages() {
     dispatchToBackgroundScript({"query": "urlList"}, function(response){
-        for(var i in response.samples)
+        for(var i = 0; i < response.samples.length; i++)
             addImage(response.urls[i], response.samples[i],
                     response.download_status[i]);
         var scanButton = document.getElementById("scanningButton");
@@ -24,18 +24,18 @@ function addImage(url, sampUrl, dlStatus) {
 
 
 function dispatchToBackgroundScript(message, callback) {
-	chrome.runtime.sendMessage(message, callback);
+    chrome.runtime.sendMessage(message, callback);
 }
 
 function clearList(){
-	dispatchToBackgroundScript({"query":"clearList"});
-	var imgs = document.body.getElementsByTagName("img");
-	for(var i = imgs.length-1 ; i >= 0; i--)
-		imgs[i].parentNode.removeChild(imgs[i]);
+    dispatchToBackgroundScript({"query":"clearList"});
+    var imgs = document.body.getElementsByTagName("img");
+    for(var i = imgs.length-1 ; i >= 0; i--)
+        imgs[i].parentNode.removeChild(imgs[i]);
 }
 
 function stopDownloads(){
-	dispatchToBackgroundScript({"query" : "stopDownloads"});
+    dispatchToBackgroundScript({"query" : "stopDownloads"});
 }
 
 function toggleScanning(){
@@ -51,10 +51,9 @@ function toggleScanning(){
 function captureImages(){
     dispatchToBackgroundScript({"query" : "captureImages"}, function(response){
         // console.log("recvd:" + JSON.stringify(response));
-        console.log("recvd message:")
         if(response == null || response.urls == null)
             return;
-        console.log(JSON.stringify(response.urls));
+        // console.log(JSON.stringify(response.urls));
         for(var i = 0; i < response.urls.length; i++) {
             addImage(response.urls[i], response.urls[i], false);
         }
@@ -78,8 +77,8 @@ function extractURL(url) {
 
 // can be improved to do only a few downloads at a time, resulting in less network failures probably.
 function download() {
-	var message = {};
-	message.urls = [];
+    var message = {};
+    message.urls = [];
     $(".download").each(function(i, element) {
         message.urls.push(element.name)
     });
@@ -87,8 +86,8 @@ function download() {
     var yes = confirm("number of files downloading: " + message.urls.length);
     if(yes && message.urls.length != 0)
     {
-    	message.query = "downloadEnclosed";
-	    dispatchToBackgroundScript(message);
+        message.query = "downloadEnclosed";
+        dispatchToBackgroundScript(message);
     }
 }
 
@@ -120,7 +119,7 @@ document.addEventListener('mousedown', function (event) {
     {
         var list = document.body.getElementsByTagName("img");
         for (var i=0; i < list.length; i++)
-        	list[i].setAttribute("class", "download");
+            list[i].setAttribute("class", "download");
     }
     else if(target.hasAttribute("id") && target.getAttribute("id") == "deSelectAllButton")
     {
@@ -136,7 +135,7 @@ document.addEventListener('mousedown', function (event) {
 
 // receives messages from other scripts.
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    console.log("in onmessage");
+    // console.log("in onmessage");
     switch(request.query)
     {
         case "downloadFinished":
