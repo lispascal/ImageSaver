@@ -1,6 +1,7 @@
 
 var urls = [];
 var sample_urls = [];
+var urls_downloaded = [];
 
 chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
     // for this chrome extension, so fix the file extension
@@ -8,7 +9,7 @@ chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
     {
         var filename = "Image Saver/" + item.filename;
 
-        var ext;
+        var ext = "";
         switch(item.mime){ // fix mime types
             case "image/png":
                 ext = ".png";
@@ -34,12 +35,13 @@ chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
 // should be used when wishing to push to the lists stored in this script.
 function listPush(url, sampUrl)
 {
-    if(url == null || urls.indexOf(url) != -1) // avoid duplicates and nulls
+    if(url == null || urls.indexOf(url) != -1 || url.length === 0) // avoid duplicates and nulls
         return;
     if(sampUrl == null)
         sampUrl = url;
     urls.push(url);
     sample_urls.push(sampUrl);
+    urls_downloaded.push(false);
 }
 
 // called by some of the context menu options.
@@ -86,11 +88,6 @@ function viewList(info, tab) {
 
     alert(aler);
 }
-
-
-// used to keep track of downloading items. All items on this are canceled if stop downloads button is hit
-var dlItems = [];
-
 
 
 var scanningFlag = false;
@@ -156,6 +153,10 @@ function addEnclosed(these_urls) {
         listPush(these_urls[i]);
 }
 
+
+// used to keep track of downloading items. All items on this are canceled if stop downloads button is hit
+var dlItems = [];
+
 // downloads the list stored in this script.
 function downloadList(info, tab) {
     stopDownloadsFlag = false;
@@ -193,26 +194,59 @@ function downloadHelper(dlist, filesDownloaded) {
     {
         var dlurl = dlist[filesDownloaded];
 
-        chrome.downloads.download(
-            {"url": dlurl,
-            conflictAction : "uniquify"}, function dl(dId) {
-            if(stopDownloadsFlag)
-            {
-                chrome.downloads.cancel(dId);
-            } 
-            else
-            {
-                dlItems.push(dId);
-                downloadHelper(dlist, filesDownloaded+1)
-            }
-        });
+        chrome.downloads.download({"url": dlurl,
+            	conflictAction : "uniquify"},
+        	function (dId) {
+        		if(stopDownloadsFlag)
+            		chrome.downloads.cancel(dId);
+        		else
+        		{
+
+	        		if(dId == undefined) // if download fails, don't add to list of "successfully downloaded"
+					{
+						// maybe keep track of these, so we can download from <img>-made blobs
+						console.log("download failed: " + dlurl);
+					}
+					else
+					{
+						dlItems.push(dId);
+					}
+            		downloadHelper(dlist, filesDownloaded+1)
+        		}
+        	}
+        );
     }
 }
+
+chrome.downloads.onChanged.addListener(function (downloadDelta) {
+	var id = downloadDelta.id;
+	if (downloadDelta.state != null)
+	{
+		if(downloadDelta.state.current == "interrupted") {
+			// send this back, so client can download via image copy?
+		} else if(downloadDelta.state.current == "complete") {
+			chrome.downloads.search({"id" : id}, function(itemArray) { // get download url
+				if(itemArray.length == 1) {
+					var url = itemArray[0].url;
+					var index = urls.indexOf(url);
+					urls_downloaded[index] = true; // update own record of download
+
+					// tell Popup that that download finished.
+					chrome.runtime.sendMessage({"query" : "downloadFinished",
+							"url": url}); 
+				}
+			});
+		}
+
+	}
+});
+
 
 
 function clearList() {
     urls = [];
     sample_urls = [];
+    urls_downloaded = [];
 }
 
 function inCurrentTab(callback) {
@@ -235,7 +269,10 @@ chrome.runtime.onMessage.addListener(
         switch(request.query)
         {
             case "urlList":
-                sendResponse({ "urls" : urls, "samples" : sample_urls, "scanning" : scanningFlag});
+                sendResponse({ "urls" : urls, 
+                		"samples" : sample_urls, 
+                		"download_status" : urls_downloaded,
+                		"scanning" : scanningFlag});
                 break;
             case "clearList":
                 clearList();
@@ -271,13 +308,14 @@ chrome.runtime.onMessage.addListener(
 chrome.commands.onCommand.addListener(function(command) {
     if(command == 'saveImage')
     {
+    	console.log("hi")
         inCurrentTab(function(tab){
             chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages"},
                                         function(response) {
 
-//                alert("recvd: " + response.src);
+               alert("recvd: ");
                 if(response == null || response.arr == null)
-                    alert("response is null. Try again on an http(s) page");
+                    alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
                 else
                 {
                     for(var i = 0; i < response.arr.length; i++)

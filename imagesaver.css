@@ -1,11 +1,11 @@
 body {
-	min-width: 830px;
+	min-width: 800px;
 	overflow-x: hidden;
 }
 
 img {
 	margin: 5px;
-	max-width: 400px;
+	max-width: 350px;
 }
 
 .download {

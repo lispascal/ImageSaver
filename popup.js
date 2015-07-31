@@ -4,9 +4,8 @@
 function showImages() {
     dispatchToBackgroundScript({"query": "urlList"}, function(response){
         for(var i in response.samples)
-        {
-            addImage(response.urls[i], response.samples[i]);
-        }
+            addImage(response.urls[i], response.samples[i],
+                    response.download_status[i]);
         var scanButton = document.getElementById("scanningButton");
         if(response.scanning == true)
             scanButton.innerHTML = " Scanning: On ";
@@ -15,10 +14,11 @@ function showImages() {
     });   
 }
 
-function addImage(url, sampUrl) {
+function addImage(url, sampUrl, dlStatus) {
     $("<img/>", {
         "src": extractURL(sampUrl),
-        "name": extractURL(url)
+        "name": extractURL(url),
+        "class": (dlStatus ? "downloaded" : "" )
     }).appendTo(document.body);
 }
 
@@ -56,7 +56,7 @@ function captureImages(){
             return;
         console.log(JSON.stringify(response.urls));
         for(var i = 0; i < response.urls.length; i++) {
-            addImage(response.urls[i], response.urls[i]);
+            addImage(response.urls[i], response.urls[i], false);
         }
     });
 }
@@ -119,7 +119,7 @@ document.addEventListener('mousedown', function (event) {
     else if(target.hasAttribute("id") && target.getAttribute("id") == "selectAllButton")
     {
         var list = document.body.getElementsByTagName("img");
-        for (i in list)
+        for (var i=0; i < list.length; i++)
         	list[i].setAttribute("class", "download");
     }
     else if(target.hasAttribute("id") && target.getAttribute("id") == "deSelectAllButton")
@@ -134,3 +134,15 @@ document.addEventListener('mousedown', function (event) {
 });
 
 
+// receives messages from other scripts.
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    console.log("in onmessage");
+    switch(request.query)
+    {
+        case "downloadFinished":
+            $("img[src='" + request.url + "']").addClass("downloaded");
+            break;
+        default:
+            break;
+    }
+});
