@@ -3,34 +3,6 @@ var urls = [];
 var sample_urls = [];
 var urls_downloaded = [];
 
-chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
-    // for this chrome extension, so fix the file extension
-    if(item.byExtensionId != null && item.byExtensionId == chrome.runtime.id)
-    {
-        var filename = "Image Saver/" + item.filename;
-
-        var ext = "";
-        switch(item.mime){ // fix mime types
-            case "image/png":
-                ext = ".png";
-                break;
-            case "image/jpeg":
-            case "image/jpg":
-                ext = ".jpg";
-                break;
-            case "image/gif":
-                ext = ".gif";
-                break;
-            default:
-                break;
-        }
-        if(ext.length != 0) // if one of the above, replace extension.
-            filename = filename.substring(0, filename.lastIndexOf(".")) + ext;
-        suggest({"filename": filename, conflictAction: "uniquify"});
-    }
-    else
-        suggest(); // not for this extension, so ignore it
-});
 
 // should be used when wishing to push to the lists stored in this script.
 function listPush(url, sampUrl)
@@ -241,12 +213,51 @@ chrome.downloads.onChanged.addListener(function (downloadDelta) {
     }
 });
 
+chrome.downloads.onDeterminingFilename.addListener(function(item, suggest) {
+    // for this chrome extension, so fix the file extension
+    if(item.byExtensionId != null && item.byExtensionId == chrome.runtime.id)
+    {
+        var filename = "Image Saver/" + item.filename;
+
+        var ext = "";
+        switch(item.mime){ // fix mime types
+            case "image/png":
+                ext = ".png";
+                break;
+            case "image/jpeg":
+            case "image/jpg":
+                ext = ".jpg";
+                break;
+            case "image/gif":
+                ext = ".gif";
+                break;
+            default:
+                break;
+        }
+        if(ext.length != 0) // if one of the above, replace extension.
+            filename = filename.substring(0, filename.lastIndexOf(".")) + ext;
+        suggest({"filename": filename, conflictAction: "uniquify"});
+    }
+    else
+        suggest(); // not for this extension, so ignore it
+});
 
 
 function clearList() {
     urls = [];
     sample_urls = [];
     urls_downloaded = [];
+}
+
+// add all to list
+function clearEnclosed(these_urls) {
+    for(var i = 0; i < these_urls.length; i++)
+    {
+        var index = urls.indexOf(these_urls[i]);
+        urls.splice(index, 1);
+        sample_urls.splice(index, 1);
+        urls_downloaded.splice(index, 1);
+    }
 }
 
 function inCurrentTab(callback) {
@@ -276,6 +287,9 @@ chrome.runtime.onMessage.addListener(
                 break;
             case "clearList":
                 clearList();
+                break;
+            case "clearEnclosed":
+                clearEnclosed(request.urls);
                 break;
             case "stopDownloads":
                 stopDownloads();

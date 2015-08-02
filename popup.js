@@ -34,6 +34,17 @@ function clearList(){
         imgs[i].parentNode.removeChild(imgs[i]);
 }
 
+function clearDownloaded(){
+    var message = {"query" : "clearEnclosed", "urls" : []}
+    var $dled = $(".downloaded");
+    $dled.each(function (idx, ele) {
+        message.urls.push(ele.name);
+    });
+    $dled.remove();
+
+    dispatchToBackgroundScript(message);
+}
+
 function stopDownloads(){
     dispatchToBackgroundScript({"query" : "stopDownloads"});
 }
@@ -109,6 +120,8 @@ document.addEventListener('mousedown', function (event) {
         download();
     else if(target.hasAttribute("id") && target.getAttribute("id") == "clearListButton")
         clearList();
+    else if(target.hasAttribute("id") && target.getAttribute("id") == "clearDownloadedButton")
+        clearDownloaded();
     else if(target.hasAttribute("id") && target.getAttribute("id") == "stopDownloadsButton")
         stopDownloads();
     else if(target.hasAttribute("id") && target.getAttribute("id") == "scanningButton")
@@ -135,11 +148,10 @@ document.addEventListener('mousedown', function (event) {
 
 // receives messages from other scripts.
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    // console.log("in onmessage");
     switch(request.query)
     {
         case "downloadFinished":
-            $("img[src='" + request.url + "']").addClass("downloaded");
+            $("img[name='" + request.url + "']").addClass("downloaded");
             break;
         default:
             break;
