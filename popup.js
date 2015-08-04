@@ -3,14 +3,14 @@
 
 function showImages() {
     dispatchToBackgroundScript({"query": "urlList"}, function(response){
+        $("#scanningCheckbox").prop("checked", response.scanning);
+        $("#cleanDownloadCheckbox").prop("checked", response.cleanDL);
+
         for(var i = 0; i < response.samples.length; i++)
             addImage(response.urls[i], response.samples[i],
                     response.download_status[i]);
-        var scanButton = document.getElementById("scanningButton");
-        if(response.scanning == true)
-            scanButton.innerHTML = " Scanning: On ";
-        else
-            scanButton.innerHTML = " Scanning: Off ";
+
+
     });   
 }
 
@@ -51,12 +51,12 @@ function stopDownloads(){
 
 function toggleScanning(){
     dispatchToBackgroundScript({"query" : "toggleScanning"}, function(response){
-        if(!response.success)
-            return;
-        $("#scanningButton").text(function(index, text) {
-            return (text.indexOf("On") >= 0) ? " Scanning: Off " : " Scanning: On ";
-        });     
+        $("#scanningCheckbox").prop("checked", response.result);
     });
+}
+
+function toggleCleanDownload(){
+    dispatchToBackgroundScript({"query" : "toggleCleanDownload"});
 }
 
 function captureImages(){
@@ -72,8 +72,6 @@ function captureImages(){
 }
 
 function extractURL(url) {
-    // alert("url = " + url);
-
     if(url.search("http") == 0)
         return url;
     else if(url.search("//") == 0)
@@ -108,7 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
     showImages();
 });
 
-document.addEventListener('mousedown', function (event) {
+
+document.addEventListener('click', function (event) {
     if(event.button != 0)
         return;
     var target = event.srcElement;
@@ -116,31 +115,44 @@ document.addEventListener('mousedown', function (event) {
     // toggle if image should be downloaded
     if(target.hasAttribute("name") && target.tagName.toLowerCase() == "img")
         $(target).toggleClass("download");
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "downloadButton")
-        download();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "clearListButton")
-        clearList();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "clearDownloadedButton")
-        clearDownloaded();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "stopDownloadsButton")
-        stopDownloads();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "scanningButton")
-        toggleScanning();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "captureButton")
-        captureImages();
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "selectAllButton")
-    {
-        var list = document.body.getElementsByTagName("img");
-        for (var i=0; i < list.length; i++)
-            list[i].setAttribute("class", "download");
-    }
-    else if(target.hasAttribute("id") && target.getAttribute("id") == "deSelectAllButton")
-    {
-        var list = document.body.getElementsByTagName("img");
-        for (i in list)
-        {
-            if(list[i].hasAttribute("class"))
-               list[i].removeAttribute("class");
+    else if(target.hasAttribute("id")) { // check which button it is
+        switch(target.getAttribute("id")) {
+            case "downloadButton":
+                download();
+                break;
+            case "clearListButton":
+                clearList();
+                break;
+            case "clearDownloadedButton":
+                clearDownloaded();
+                break;
+            case "stopDownloadsButton":
+                stopDownloads();
+                break;
+            case "scanningCheckbox":
+                toggleScanning();
+                break;
+            case "cleanDownloadCheckbox":
+                toggleCleanDownload();
+                break;
+            case "captureButton":
+                captureImages();
+                break;
+            case "selectAllButton":
+                var list = document.body.getElementsByTagName("img");
+                for (var i=0; i < list.length; i++)
+                    list[i].setAttribute("class", "download");
+                break;
+            case "deSelectAllButton":
+                var list = document.body.getElementsByTagName("img");
+                for (i in list)
+                {
+                    if(list[i].hasAttribute("class"))
+                       list[i].removeAttribute("class");
+                }
+                break;
+            default:
+                break;
         }
     }
 });

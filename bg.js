@@ -61,7 +61,7 @@ function viewList(info, tab) {
     alert(aler);
 }
 
-
+var cleanDownloadFlag = false;
 var scanningFlag = false;
 var scanningSize = 0;
 // toggles the scanning feature. Scanning is performed in content.js in load() if scanningFlag is set to <true>.
@@ -72,11 +72,9 @@ function toggleScanning() {
     {
         scanningSize = prompt("min size of images in px?");
         if(scanningSize != null && scanningSize >= 0)
-            scanningFlag = !scanningFlag;
-        else // if failed, indicate so
-            return false;
+            scanningFlag = true;
     }
-    return true;
+    return scanningFlag;
 }
 
 // returns an array of all urls of images above a size
@@ -198,7 +196,7 @@ chrome.downloads.onChanged.addListener(function (downloadDelta) {
             // send this back, so client can download via image copy?
         } else if(downloadDelta.state.current == "complete") {
             chrome.downloads.search({"id" : id}, function(itemArray) { // get download url
-                if(itemArray.length == 1) {
+                if(itemArray.length == 1) { // sanity
                     var url = itemArray[0].url;
                     var index = urls.indexOf(url);
                     urls_downloaded[index] = true; // update own record of download
@@ -206,6 +204,10 @@ chrome.downloads.onChanged.addListener(function (downloadDelta) {
                     // tell Popup that that download finished.
                     chrome.runtime.sendMessage({"query" : "downloadFinished",
                             "url": url}); 
+
+                    // inserted here because it needs to be done AFTER the item is looked at for url
+                    if(cleanDownloadFlag)
+                        chrome.downloads.erase({"id" : id});
                 }
             });
         }
@@ -283,7 +285,8 @@ chrome.runtime.onMessage.addListener(
                 sendResponse({ "urls" : urls, 
                         "samples" : sample_urls, 
                         "download_status" : urls_downloaded,
-                        "scanning" : scanningFlag});
+                        "scanning" : scanningFlag,
+                        "cleanDL" : cleanDownloadFlag});
                 break;
             case "clearList":
                 clearList();
@@ -305,7 +308,10 @@ chrome.runtime.onMessage.addListener(
                 addEnclosed(request.arr);
                 break;
             case "toggleScanning":
-                sendResponse({ "success" : toggleScanning() });
+                sendResponse({ "result" : toggleScanning() });
+                break;
+            case "toggleCleanDownload":
+                cleanDownloadFlag = !cleanDownloadFlag;
                 break;
             case "captureImages":
                 captureImages(sendResponse);

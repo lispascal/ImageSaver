@@ -23,7 +23,7 @@ function load(){
             message.arr = [];
             $("img").each(function (i, obj){
                 if(obj.height >= size && obj.width >= size)
-                    message.arr.push(obj);
+                    message.arr.push(obj.src);
             });
 
             if(message.arr.length == 0) // don't send a blank list.

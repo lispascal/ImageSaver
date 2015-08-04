@@ -11,20 +11,27 @@
       - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
      -->
     <script src="library/jquery-2.1.4.js"></script>
-    <script src="popup.js"></script>
   </head>
   <body>
-    <button id="downloadButton"> Download Selected </button>
+    
     <button id="selectAllButton"> Select All </button>
     <button id="deSelectAllButton"> Unselect All </button>
     <br />
     <button id="clearListButton"> Clear List </button>
     <button id="clearDownloadedButton"> Clear Downloaded </button>
-    <button id="stopDownloadsButton"> Stop Downloads </button>
-    <button id="scanningButton"> Scanning: </button>
     <br />
-    <button id="captureButton"> Capture Images from all tabs in window </button>
+    <button id="downloadButton"> Download Selected </button>
+    <button id="stopDownloadsButton"> Stop Downloads </button>
+    <br />
+    <button id="captureButton"> Capture all Images in Window </button>
+    <br />
+    <input type="checkbox" id="scanningCheckbox">
+      Active Scanning <sup title="Add all images from new pages to list">(?)</sup>
+    <br />
+    <input type="checkbox" id="cleanDownloadCheckbox">
+      Scrub DL History <sup title="Remove records from Download history upon completion or failure">(?)</sup>
     <br />
   </body>
+    <script src="popup.js"></script>
 </html>
 
