@@ -192,17 +192,18 @@ chrome.downloads.onChanged.addListener(function (downloadDelta) {
     var id = downloadDelta.id;
     if (downloadDelta.state != null)
     {
-        if(downloadDelta.state.current == "interrupted") {
-            // send this back, so client can download via image copy?
-        } else if(downloadDelta.state.current == "complete") {
+        var state = downloadDelta.state.current;
+        if(state == "complete" || state == "interrupted") {
+            var isSuccessful = (state == "complete" ? true : false);
             chrome.downloads.search({"id" : id}, function(itemArray) { // get download url
                 if(itemArray.length == 1) { // sanity
                     var url = itemArray[0].url;
                     var index = urls.indexOf(url);
-                    urls_downloaded[index] = true; // update own record of download
+                    urls_downloaded[index] = isSuccessful; // update own record of download
 
                     // tell Popup that that download finished.
-                    chrome.runtime.sendMessage({"query" : "downloadFinished",
+                    chrome.runtime.sendMessage({"query" : "downloadEnded",
+                            "success" : isSuccessful,
                             "url": url}); 
 
                     // inserted here because it needs to be done AFTER the item is looked at for url

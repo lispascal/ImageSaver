@@ -11,6 +11,9 @@ img {
 .download {
 	border: 3px solid red;
 }
-.downloaded {
+.success {
 	border: 3px solid blue;
+}
+.failed {
+	border : 3px solid orange;
 }

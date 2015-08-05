@@ -1,4 +1,6 @@
-
+var failedClass = "failed";
+var successClass = "success";
+var toDownloadClass = "download";
 
 
 function showImages() {
@@ -18,7 +20,7 @@ function addImage(url, sampUrl, dlStatus) {
     $("<img/>", {
         "src": extractURL(sampUrl),
         "name": extractURL(url),
-        "class": (dlStatus ? "downloaded" : "" )
+        "class": (dlStatus ? successClass : "" )
     }).appendTo(document.body);
 }
 
@@ -36,7 +38,7 @@ function clearList(){
 
 function clearDownloaded(){
     var message = {"query" : "clearEnclosed", "urls" : []}
-    var $dled = $(".downloaded");
+    var $dled = $("." + successClass);
     $dled.each(function (idx, ele) {
         message.urls.push(ele.name);
     });
@@ -88,7 +90,7 @@ function extractURL(url) {
 function download() {
     var message = {};
     message.urls = [];
-    $(".download").each(function(i, element) {
+    $("." + toDownloadClass).each(function(i, element) {
         message.urls.push(element.name)
     });
 
@@ -99,8 +101,6 @@ function download() {
         dispatchToBackgroundScript(message);
     }
 }
-
-
 
 document.addEventListener('DOMContentLoaded', function () {
     showImages();
@@ -114,11 +114,14 @@ document.addEventListener('click', function (event) {
 
     // toggle if image should be downloaded
     if(target.hasAttribute("name") && target.tagName.toLowerCase() == "img")
-        $(target).toggleClass("download");
+        $(target).toggleClass(toDownloadClass);
     else if(target.hasAttribute("id")) { // check which button it is
         switch(target.getAttribute("id")) {
             case "downloadButton":
                 download();
+                break;
+            case "downloadFailedImagesButton":
+                downloadFailedImages();
                 break;
             case "clearListButton":
                 clearList();
@@ -139,17 +142,10 @@ document.addEventListener('click', function (event) {
                 captureImages();
                 break;
             case "selectAllButton":
-                var list = document.body.getElementsByTagName("img");
-                for (var i=0; i < list.length; i++)
-                    list[i].setAttribute("class", "download");
+                $("img").addClass(toDownloadClass)
                 break;
             case "deSelectAllButton":
-                var list = document.body.getElementsByTagName("img");
-                for (i in list)
-                {
-                    if(list[i].hasAttribute("class"))
-                       list[i].removeAttribute("class");
-                }
+                $("img").removeClass(toDownloadClass)
                 break;
             default:
                 break;
@@ -162,8 +158,8 @@ document.addEventListener('click', function (event) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     switch(request.query)
     {
-        case "downloadFinished":
-            $("img[name='" + request.url + "']").addClass("downloaded");
+        case "downloadEnded":
+            $("img[name='" + request.url + "']").addClass(request.success ? successClass : failedClass);
             break;
         default:
             break;
