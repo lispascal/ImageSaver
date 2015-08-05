@@ -21,7 +21,9 @@ function addImage(url, sampUrl, dlStatus) {
         "src": extractURL(sampUrl),
         "name": extractURL(url),
         "class": (dlStatus ? successClass : "" )
-    }).appendTo(document.body);
+    }).appendTo(document.body).load(function() {
+        $(this).data("loaded", true);
+    });
 }
 
 
@@ -102,6 +104,31 @@ function download() {
     }
 }
 
+function copySaveImagesButton() {
+    var message = {};
+    message.urls = [];
+    $("." + failedClass).each(function(i, element) {
+        if ($(element).data("loaded")){
+            console.log("w:" + element.naturalWidth);
+            console.log("h:" + element.naturalHeight);
+            var canvas = $("<canvas/>")[0];
+            canvas.width =  element.naturalWidth;
+            canvas.height = element.naturalHeight;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(element, 0, 0);
+            message.urls.push(canvas.toDataURL());
+        }
+        // message.urls.push(element.name)
+    });
+
+    var yes = confirm("number of files downloading: " + message.urls.length);
+    if(yes && message.urls.length != 0)
+    {
+        message.query = "downloadEnclosed";
+        dispatchToBackgroundScript(message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     showImages();
 });
@@ -120,8 +147,8 @@ document.addEventListener('click', function (event) {
             case "downloadButton":
                 download();
                 break;
-            case "downloadFailedImagesButton":
-                downloadFailedImages();
+            case "copySaveImagesButton":
+                copySaveImagesButton();
                 break;
             case "clearListButton":
                 clearList();
