@@ -327,21 +327,28 @@ chrome.runtime.onMessage.addListener(
 
 // listens for hotkeys
 chrome.commands.onCommand.addListener(function (command) {
-    if (command == 'saveImage') {
-        inCurrentTab(function(tab){
-            chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages"},
-                                        function(response) {
-                if(response == null || response.arr == null)
-                    alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
-                else
-                {
-                    for(var i = 0; i < response.arr.length; i++)
+    switch(command){
+        case 'saveImage':
+            inCurrentTab(function(tab){
+                chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages"},
+                                            function(response) {
+                    if(response == null || response.arr == null)
+                        alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
+                    else
                     {
-                        listPush(response.arr[i]);
+                        for(var i = 0; i < response.arr.length; i++)
+                            listPush(response.arr[i]);
                     }
-                }
+                });
             });
-        });
+            break;
+        case 'viewBiggestImage':
+            inCurrentTab(function(tab){
+                chrome.tabs.sendMessage(tab.id, {"query": "viewBiggestImage"});
+            });
+            break;
+        default:
+            break;
     }        
 });
       

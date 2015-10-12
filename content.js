@@ -162,16 +162,42 @@ function getUrlsOfPageImagesGivenSize(dim, markRed) {
     return response;
 }
 
+// sets current location/url to that of the biggest image on the page, as determined by width*height
+function viewBiggestImage() {
+    var list = document.body.getElementsByTagName("img");
+    if(list.length <= 0)
+        return;
+    var areaMax = 0;
+    var biggestImageIndex = 0;
+    for(var i = 0; i < list.length; i++){
+        var area = list[i].height * list[i].width;
+        if(area > areaMax) {
+            areaMax = area;
+            biggestImageIndex = i;
+        }
+    }
+    document.location.href = list[biggestImageIndex].src;
+}
 //receives messages from other scripts.
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         // console.log(request);
-        if(request.query == "imagesOfThumbnails") // from bg.js
-            sendResponse(getImagesOfThumbnails(request));
-        else if(request.query === "urlsOfPageImages") // from bg.js
-            sendResponse(getUrlsOfPageImages());
-        else if(request.query === "urlsOfPageImagesGivenSize") // from bg.js
-            sendResponse(getUrlsOfPageImagesGivenSize(request.dimension, false));
+        switch(request.query) {
+            case "imagesOfThumbnails": // from bg.js
+                sendResponse(getImagesOfThumbnails(request));
+                break;
+            case "urlsOfPageImages": // from bg.js
+                sendResponse(getUrlsOfPageImages());
+                break;
+            case "viewBiggestImage": // from bg.js
+                viewBiggestImage();
+                break;
+            case "urlsOfPageImagesGivenSize": // from bg.js
+                sendResponse(getUrlsOfPageImagesGivenSize(request.dimension, false));
+                break;
+            default:
+                break;
+        }
 
     }
 );

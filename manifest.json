@@ -16,7 +16,15 @@
 				"windows": "Ctrl+Shift+S",
 	  			"default": "Ctrl+Shift+S"
 			},
-			"description": "saves last clicked image",
+			"description": "Saves last clicked image",
+			"global": true
+		},
+	  	"viewBiggestImage": {
+			"suggested_key": {
+				"windows": "Ctrl+Shift+E",
+	  			"default": "Ctrl+Shift+E"
+			},
+			"description": "Changes current url to biggest image in window",
 			"global": true
 		}
 	},
