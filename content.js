@@ -6,13 +6,17 @@ document.addEventListener("mousedown", function(event){
         tar = event.srcElement;
 }, true);
 
+var selfTabId = null;
+
 // window.onload = load();
 $(document).ready(function() {
     load();
 });
 
+
 function load(){
-    dispatchToBackgroundScript({"query": "scanningFlag"}, function(response){
+    dispatchToBackgroundScript({"query": "scanningFlagAndTabId"}, function(response){
+        selfTabId = response.tabId; // so a tab knows its own id!
         if(response.scanning) // then create list of all images, and send to list.
         {
             var size = response.scanSize;
@@ -181,23 +185,24 @@ function viewBiggestImage() {
 //receives messages from other scripts.
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
-        // console.log(request);
-        switch(request.query) {
-            case "imagesOfThumbnails": // from bg.js
-                sendResponse(getImagesOfThumbnails(request));
-                break;
-            case "urlsOfPageImages": // from bg.js
-                sendResponse(getUrlsOfPageImages());
-                break;
-            case "viewBiggestImage": // from bg.js
-                viewBiggestImage();
-                break;
-            case "urlsOfPageImagesGivenSize": // from bg.js
-                sendResponse(getUrlsOfPageImagesGivenSize(request.dimension, false));
-                break;
-            default:
-                break;
+        //avoid unintended tab running scripts
+        if (request.tabId == selfTabId){
+            switch(request.query) {
+                case "imagesOfThumbnails": // from bg.js
+                    sendResponse(getImagesOfThumbnails(request));
+                    break;
+                case "urlsOfPageImages": // from bg.js
+                    sendResponse(getUrlsOfPageImages());
+                    break;
+                case "viewBiggestImage": // from bg.js
+                    viewBiggestImage();
+                    break;
+                case "urlsOfPageImagesGivenSize": // from bg.js
+                    sendResponse(getUrlsOfPageImagesGivenSize(request.dimension, false));
+                    break;
+                default:
+                    break;
+            }
         }
-
     }
 );

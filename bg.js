@@ -38,7 +38,8 @@ function addFromThumbnails(info, tab) {
     // send message to content script
     chrome.tabs.sendMessage(tab.id, 
             {"pageUrl": info.pageUrl,
-            "query": "imagesOfThumbnails"},
+            "query": "imagesOfThumbnails",
+            "tabId": tab.id},
             function(response) {
         if(response == null || response.arr == null)
             return;
@@ -89,8 +90,9 @@ function captureImages(callback) {
             var recvd = 0;
             for(var i = 0; i < tabArray.length; i++)
             {
-                chrome.tabs.sendMessage(tabArray[i].id,
-                        {"query": "urlsOfPageImagesGivenSize", "dimension": captureSize },
+                var tabId = tabArray[i].id;
+                chrome.tabs.sendMessage(tabId,
+                        {"query": "urlsOfPageImagesGivenSize", "dimension": captureSize, "tabId": tabId },
                         function(response) {
                     recvd++;
 
@@ -298,8 +300,8 @@ chrome.runtime.onMessage.addListener(
             case "stopDownloads":
                 stopDownloads();
                 break;
-            case "scanningFlag":
-                sendResponse({ "scanning" : scanningFlag, "scanSize" : scanningSize });
+            case "scanningFlagAndTabId":
+                sendResponse({ "scanning" : scanningFlag, "scanSize" : scanningSize, "tabId": sender.tab.id });
                 break;
             case "downloadEnclosed":
                 if(request.urls != null)
@@ -330,7 +332,7 @@ chrome.commands.onCommand.addListener(function (command) {
     switch(command){
         case 'saveImage':
             inCurrentTab(function(tab){
-                chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages"},
+                chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages", "tabId": tab.id},
                                             function(response) {
                     if(response == null || response.arr == null)
                         alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
@@ -344,7 +346,7 @@ chrome.commands.onCommand.addListener(function (command) {
             break;
         case 'viewBiggestImage':
             inCurrentTab(function(tab){
-                chrome.tabs.sendMessage(tab.id, {"query": "viewBiggestImage"});
+                chrome.tabs.sendMessage(tab.id, {"query": "viewBiggestImage", "tabId":tab.id});
             });
             break;
         default:
