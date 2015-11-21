@@ -8,7 +8,7 @@ function showImages() {
         $("#scanningCheckbox").prop("checked", response.scanning);
         $("#cleanDownloadCheckbox").prop("checked", response.cleanDL);
 
-        for(var i = 0; i < response.samples.length; i++)
+        for(var i = response.samples.length - 1; i >= 0; i--)
             addImage(response.urls[i], response.samples[i],
                     response.download_status[i]);
 
