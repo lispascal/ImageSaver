@@ -121,13 +121,16 @@ function getImagesOfThumbnails(request) {
 
 
 // Grabs the only image on page if only one. Otherwise, grabs all images above a prompted size.
+// returns an object with error set to some error, or a list of images
 function getUrlsOfPageImages() {    
     var list = document.body.getElementsByTagName("img");
 
     if(list.length > 1) 
     {
         var size = prompt("Minimum size of images (in px) to add to list:");
-        if(size != null)
+        if(size == null) // if prompt was canceled
+            return {"error": "PromptCanceledError"};
+        else
             return getUrlsOfPageImagesGivenSize(size, true);
     }
     else if(list.length == 1)
@@ -143,8 +146,8 @@ function getUrlsOfPageImages() {
 
         return response;
     }
-    // if they canceled on prompt, or 0 images
-    return null;
+    else // only remaining case is 0 images
+        return {"error": "NoImageError"};
 }
 
 // Grabs the only image on page if only one. Otherwise, grabs all images above a prompted size.
@@ -174,6 +177,8 @@ function viewBiggestImage() {
     var areaMax = 0;
     var biggestImageIndex = 0;
     for(var i = 0; i < list.length; i++){
+        if(list[i].src === "") // skip img tags that don't have a src; they aren't displayed
+            continue;
         var area = list[i].height * list[i].width;
         if(area > areaMax) {
             areaMax = area;

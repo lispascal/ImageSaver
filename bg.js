@@ -334,10 +334,11 @@ chrome.commands.onCommand.addListener(function (command) {
             inCurrentTab(function(tab){
                 chrome.tabs.sendMessage(tab.id, {"query": "urlsOfPageImages", "tabId": tab.id},
                                             function(response) {
-                    if(response == null || response.arr == null)
-                        alert("response is null. Try again on an http(s) page.\nIf this is an http(s) page, try refreshing the extension.");
-                    else
-                    {
+                    if(response.error === "NoImageError")
+                        console.log("No images detected on page.")
+                    else if(response.error === "PromptCanceledError")
+                        console.log("saveImage command's dimension prompt was canceled");
+                    else { // if no errors, a list of image(s) was served
                         for(var i = 0; i < response.arr.length; i++)
                             listPush(response.arr[i]);
                     }
