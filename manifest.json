@@ -30,13 +30,13 @@
 	},
 
 	"background": {
-		"scripts": ["bg.js"]
+		"scripts": ["js/bg.js"]
 	},
 
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["library/jquery-2.1.4.js", "content.js"]
+			"js": ["library/jquery-2.1.4.js", "js/content.js"]
 		}
 	],
 

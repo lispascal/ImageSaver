@@ -1,11 +1,15 @@
 body {
-	min-width: 800px;
+	min-width: 900px;
 	overflow-x: hidden;
 }
 
 img {
 	margin: 5px;
-	max-width: 350px;
+	max-width: 250px;
+}
+
+.image_card {
+	display: inline-block;
 }
 
 .download {

@@ -3,29 +3,6 @@ var successClass = "success";
 var toDownloadClass = "download";
 
 
-function showImages() {
-    dispatchToBackgroundScript({"query": "urlList"}, function(response){
-        $("#scanningCheckbox").prop("checked", response.scanning);
-        $("#cleanDownloadCheckbox").prop("checked", response.cleanDL);
-
-        for(var i = response.samples.length - 1; i >= 0; i--)
-            addImage(response.urls[i], response.samples[i],
-                    response.download_status[i]);
-
-
-    });   
-}
-
-function addImage(url, sampUrl, dlStatus) {
-    $("<img/>", {
-        "src": extractURL(sampUrl),
-        "name": extractURL(url),
-        "class": (dlStatus ? successClass : "" )
-    }).appendTo(document.body).load(function() {
-        $(this).data("loaded", true);
-    });
-}
-
 
 function dispatchToBackgroundScript(message, callback) {
     chrome.runtime.sendMessage(message, callback);
@@ -93,7 +70,7 @@ function download() {
     var message = {};
     message.urls = [];
     $("." + toDownloadClass).each(function(i, element) {
-        message.urls.push(element.name)
+        message.urls.push(element.dataset.origSrc)
     });
 
     var yes = confirm("number of files downloading: " + message.urls.length);
@@ -129,9 +106,9 @@ function copySaveImagesButton() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-    showImages();
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     showImages();
+// });
 
 
 document.addEventListener('click', function (event) {
@@ -140,7 +117,7 @@ document.addEventListener('click', function (event) {
     var target = event.srcElement;
 
     // toggle if image should be downloaded
-    if(target.hasAttribute("name") && target.tagName.toLowerCase() == "img")
+    if(target.hasAttribute("data-orig-src") && target.tagName.toLowerCase() == "img")
         $(target).toggleClass(toDownloadClass);
     else if(target.hasAttribute("id")) { // check which button it is
         switch(target.getAttribute("id")) {
@@ -186,7 +163,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     switch(request.query)
     {
         case "downloadEnded":
-            $("img[name='" + request.url + "']").addClass(request.success ? successClass : failedClass);
+            $("img[data-orig-src='" + request.url + "']").addClass(request.success ? successClass : failedClass);
             break;
         default:
             break;
