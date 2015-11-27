@@ -15,17 +15,17 @@
   </head>
   <body ng-controller="imageListCtrl">
     
-    <button id="selectAllButton"> Select All </button>
-    <button id="deSelectAllButton"> Unselect All </button>
+    <button id="selectAllButton" ng-click="selectAll()"> Select All </button>
+    <button id="deSelectAllButton" ng-click="unselectAll()"> Unselect All </button>
     <br />
-    <button id="clearListButton"> Clear List </button>
-    <button id="clearDownloadedButton"> Clear Downloaded </button>
+    <button id="clearListButton" ng-click="clearList()"> Clear List </button>
+    <button id="clearDownloadedButton" ng-click="clearDLed()"> Clear Downloaded </button>
     <br />
     <button id="downloadButton"> Download Selected </button>
     <button id="copySaveImagesButton"> Copy-save failed images </button>
     <button id="stopDownloadsButton"> Stop Downloads </button>
     <br />
-    <button id="captureButton"> Capture all Images in Window </button>
+    <button id="captureButton" ng-click="captureImages()"> Capture all Images in Window </button>
     <br />
     <input type="checkbox" id="scanningCheckbox">
       Active Scanning <sup title="Add all images from new pages to list">(?)</sup>
@@ -36,7 +36,11 @@
 
     <div ng-repeat="image in images" class="mdl-card image_card">
       <div class="mdl-card__title mdl-card--expand">
-        <img ng-src="{{image.sample}}" ng-attr-data-orig-src="{{image.url}}" loadcheck>
+        <img ng-src="{{image.sample}}" ng-attr-data-orig-src="{{image.url}}" loadcheck
+        ng-class="{download: image.selectedStatus,
+          success: image.downloaded,
+          failed: image.failed}" 
+        ng-click="image.selectedStatus = !(image.selectedStatus)">
       </div>
       <div class="mdl-card__actions">
         <span class="demo-card-image__filename">{{image.name}}</span>

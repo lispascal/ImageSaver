@@ -3,13 +3,14 @@ body {
 	overflow-x: hidden;
 }
 
-img {
-	margin: 5px;
-	max-width: 250px;
+.image_card img {
+	/*margin: 5px;*/
+	max-width: 100%;
 }
 
 .image_card {
 	display: inline-block;
+	max-width: 200px;
 }
 
 .download {
@@ -21,3 +22,4 @@ img {
 .failed {
 	border : 3px solid orange;
 }
+

@@ -1,29 +1,10 @@
 var failedClass = "failed";
-var successClass = "success";
 var toDownloadClass = "download";
 
 
 
 function dispatchToBackgroundScript(message, callback) {
     chrome.runtime.sendMessage(message, callback);
-}
-
-function clearList(){
-    dispatchToBackgroundScript({"query":"clearList"});
-    var imgs = document.body.getElementsByTagName("img");
-    for(var i = imgs.length-1 ; i >= 0; i--)
-        imgs[i].parentNode.removeChild(imgs[i]);
-}
-
-function clearDownloaded(){
-    var message = {"query" : "clearEnclosed", "urls" : []}
-    var $dled = $("." + successClass);
-    $dled.each(function (idx, ele) {
-        message.urls.push(ele.name);
-    });
-    $dled.remove();
-
-    dispatchToBackgroundScript(message);
 }
 
 function stopDownloads(){
@@ -40,18 +21,6 @@ function toggleCleanDownload(){
     dispatchToBackgroundScript({"query" : "toggleCleanDownload"});
 }
 
-function captureImages(){
-    dispatchToBackgroundScript({"query" : "captureImages"}, function(response){
-        // console.log("recvd:" + JSON.stringify(response));
-        if(response == null || response.urls == null)
-            return;
-        // console.log(JSON.stringify(response.urls));
-        for(var i = 0; i < response.urls.length; i++) {
-            addImage(response.urls[i], response.urls[i], false);
-        }
-    });
-}
-
 function extractURL(url) {
     if(url.search("http") == 0)
         return url;
@@ -61,11 +30,6 @@ function extractURL(url) {
         return url;
 }
 
-
-
-
-
-// can be improved to do only a few downloads at a time, resulting in less network failures probably.
 function download() {
     var message = {};
     message.urls = [];
@@ -106,32 +70,18 @@ function copySaveImagesButton() {
     }
 }
 
-// document.addEventListener('DOMContentLoaded', function () {
-//     showImages();
-// });
-
-
 document.addEventListener('click', function (event) {
     if(event.button != 0)
         return;
     var target = event.srcElement;
 
-    // toggle if image should be downloaded
-    if(target.hasAttribute("data-orig-src") && target.tagName.toLowerCase() == "img")
-        $(target).toggleClass(toDownloadClass);
-    else if(target.hasAttribute("id")) { // check which button it is
+    if(target.hasAttribute("id")) { // check which button it is
         switch(target.getAttribute("id")) {
             case "downloadButton":
                 download();
                 break;
             case "copySaveImagesButton":
                 copySaveImagesButton();
-                break;
-            case "clearListButton":
-                clearList();
-                break;
-            case "clearDownloadedButton":
-                clearDownloaded();
                 break;
             case "stopDownloadsButton":
                 stopDownloads();
@@ -142,28 +92,21 @@ document.addEventListener('click', function (event) {
             case "cleanDownloadCheckbox":
                 toggleCleanDownload();
                 break;
-            case "captureButton":
-                captureImages();
-                break;
-            case "selectAllButton":
-                $("img").addClass(toDownloadClass)
-                break;
-            case "deSelectAllButton":
-                $("img").removeClass(toDownloadClass)
-                break;
             default:
                 break;
         }
     }
 });
 
-
+var $scope = null; 
 // receives messages from other scripts.
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     switch(request.query)
     {
         case "downloadEnded":
-            $("img[data-orig-src='" + request.url + "']").addClass(request.success ? successClass : failedClass);
+            if ($scope==null)
+                $scope = angular.element(document.body).scope();
+            $scope.$apply($scope.downloadEnd(request.url, request.success));
             break;
         default:
             break;
