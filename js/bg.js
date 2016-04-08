@@ -25,11 +25,6 @@ function addToList(info, tab) {
         url = info.srcUrl;
         listPush(url);
     }
-    else if(info.menuItemId == con2) // link
-    {
-        url = info.linkUrl;
-        listPush(url);
-    }
 }
 
 function addFromThumbnails(info, tab) {
@@ -279,6 +274,7 @@ function withTabsInCurrentWindow(callback) {
 }
 
 
+
 // receives messages from other scripts.
 chrome.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
@@ -362,22 +358,5 @@ var con1 = chrome.contextMenus.create({"title": "add image to list",
                                     "contexts": ["image"],
                                     "onclick": addToList });
 
-var con2 = chrome.contextMenus.create({"title": "add link to list", "contexts":["link"],
-                                   "onclick": addToList });
-
-var con3 = chrome.contextMenus.create({"title": "view list", "contexts":["all"],
-                                    "onclick": viewList})
-
-var con4 = chrome.contextMenus.create({"title": "download all", "contexts":["all"],
-                                    "onclick": downloadList})
-
-var con5 = chrome.contextMenus.create({"title": "add all imgs from similar thumbnails", "contexts":["link"],
+var con2 = chrome.contextMenus.create({"title": "add all imgs from similar thumbnails", "contexts":["link"],
                                    "onclick": addFromThumbnails });
-
-var con6 = chrome.contextMenus.create({"title": "clear list", "contexts":["all"],
-                                   "onclick": clearList });
-
-var con7 = chrome.contextMenus.create({"title": "Toggle Active Scanning", "contexts":["all"],
-                                   "onclick": toggleScanning });
-
-
